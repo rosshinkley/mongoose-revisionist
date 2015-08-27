@@ -1,0 +1,43 @@
+
+{
+  "name": "mongoose-revisionst",
+  "version": "0.1.0",
+  "description": "Oplog-like tracking for mongoose",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rosshinkley/mongoose-revisionist"
+  },
+  "dependencies": {
+    "mongoose": "~4.0.7",
+    "async": "*",
+    "lodash": "~3.10.0",
+    "argx": "~1.1.6",
+    "moment": "~2.10.6"
+  },
+  "devDependencies": {
+    "winston": "~1.0.0",
+    "nodeunit": "~0.9.1"
+  },
+  "scripts": {
+    "test":"nodeunit tests/index.js"
+  },
+  "author": {
+    "name": "Ross Hinkley",
+    "email": "rosshinkley@gmail.com"
+  },
+  "engines":{
+    "node": "*"
+  },
+  "keywords":[
+    "mongoose",
+    "audit",
+    "oplog",
+    "versioning"
+  ],
+  "license": "MIT"
+}
+
