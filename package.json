@@ -1,6 +1,6 @@
 
 {
-  "name": "mongoose-revisionst",
+  "name": "mongoose-revisionist",
   "version": "0.1.0",
   "description": "Oplog-like tracking for mongoose",
   "main": "index.js",
