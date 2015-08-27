@@ -38,6 +38,9 @@
     "oplog",
     "versioning"
   ],
+  "bugs":{
+    "url":"https://github.com/rosshinkley/mongoose-revisionist/issues"
+  },
   "license": "MIT"
 }
 
