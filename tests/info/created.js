@@ -4,21 +4,16 @@ var mongoose = require('mongoose'),
     _ = require('lodash'),
     logger = require('winston'),
     moment = require('moment'),
+    should = require('should'),
     testUtil = require('../util');
 
-module.exports = exports = {
-    setUp: function(cb) {
-        var self = this;
-        self.start = moment();
-        testUtil.setup(self);
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
+describe('created', function() {
+    beforeEach(function(done) {
+        this.start = moment();
+        done();
+    });
 
-    },
-    created: function(test) {
+    it('should have a created time', function(done) {
         var self = this;
         async.waterfall([
 
@@ -36,17 +31,19 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.ok(p.simple.created);
-            test.ok(
-                (moment(p.simple.created)
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            should(p.simple.created)
+                .be.ok();
+            should((moment(p.simple.created)
                     .isSame(self.start) || moment(p.simple.created)
                     .isAfter(self.start)) &&
                 (moment()
                     .isSame(moment(p.simple.created)) || moment()
-                    .isAfter(moment(p.simple.created))));
-            test.done();
+                    .isAfter(moment(p.simple.created))))
+                .be.ok();
+            done();
         });
-
-    },
-};
+    })
+});

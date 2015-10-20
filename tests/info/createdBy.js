@@ -3,19 +3,12 @@ var mongoose = require('mongoose'),
     async = require('async'),
     _ = require('lodash'),
     logger = require('winston'),
+    should = require('should'),
     testUtil = require('../util');
 
-module.exports = exports = {
-    setUp: function(cb) {
-        testUtil.setup(this);
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
 
-    },
-    createdBy: function(test) {
+describe('created by', function() {
+    it('should have a created by', function(done) {
         var self = this;
         async.waterfall([
 
@@ -33,16 +26,18 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.ok(p.simple.createdBy);
-            test.ok(p.simple.modifiedBy);
-            test.equal(p.simple.createdBy, 'test');
-            test.equal(p.simple.createdBy, p.simple.modifiedBy);
-            test.done();
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            should(p.simple.createdBy)
+                .be.ok();
+            p.simple.createdBy.should.equal('test');
+            p.simple.createdBy.should.equal(p.simple.modifiedBy);
+            done();
         });
+    });
 
-    },
-    'createdBy not set': function(test) {
+    it('should automatically assign unknown if no created by is specified', function(done) {
         var self = this;
         async.waterfall([
 
@@ -59,13 +54,14 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.ok(p.simple.createdBy);
-            test.ok(p.simple.modifiedBy);
-            test.equal(p.simple.createdBy, '[unknown]');
-            test.equal(p.simple.createdBy, p.simple.modifiedBy);
-            test.done();
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            should(p.simple.createdBy)
+                .be.ok();
+            p.simple.createdBy.should.equal('[unknown]');
+            p.simple.createdBy.should.equal(p.simple.modifiedBy);
+            done();
         });
-
-    },
-};
+    });
+});

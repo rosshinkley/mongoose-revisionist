@@ -3,21 +3,11 @@ var mongoose = require('mongoose'),
     async = require('async'),
     _ = require('lodash'),
     logger = require('winston'),
+    should = require('should'),
     testUtil = require('../util');
 
-
-
-module.exports = exports = {
-    setUp: function(cb) {
-        testUtil.setup(this);
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
-
-    },
-    simple: function(test) {
+describe('versions', function() {
+    it('should get versions of a simple model', function(done) {
         var self = this;
         async.waterfall([
 
@@ -55,13 +45,15 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.versions.length, 3);
-            test.done();
+            if (err) return done(err);
+            should(p.versions)
+                .be.ok();
+            p.versions.length.should.equal(3);
+            done();
         });
+    });
 
-    },
-    composite: function(test) {
+    it('should get versions of a composite model', function(done) {
         var self = this;
         async.waterfall([
 
@@ -102,13 +94,15 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.versions.length, 3);
-            test.done();
+            if (err) return done(err);
+            should(p.versions)
+                .be.ok();
+            p.versions.length.should.equal(3);
+            done();
         });
+    });
 
-    },
-    'composite with array': function(test) {
+    it('should get versions of a composite model with an array', function(done){
         var self = this;
         async.waterfall([
 
@@ -150,14 +144,16 @@ module.exports = exports = {
                 });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.versions.length, 3);
-            test.done();
+            if (err) return done(err);
+            should(p.versions)
+                .be.ok();
+            p.versions.length.should.equal(3);
+            done();
         });
+    });
 
-    },
-    reference: function(test) {
-        var self = this;
+    it('should get versions of a model with a reference', function(done){
+var self = this;
         async.waterfall([
 
             function(cb) {
@@ -266,12 +262,11 @@ module.exports = exports = {
             }
 
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.versions.length, 3);
-
-            test.done();
+            if (err) return done(err);
+            should(p.versions)
+                .be.ok();
+            p.versions.length.should.equal(3);
+            done();
         });
-
-    },
-
-};
+    });
+});

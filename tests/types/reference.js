@@ -2,20 +2,12 @@ var mongoose = require('mongoose'),
     util = require('util'),
     async = require('async'),
     _ = require('lodash'),
+    should = require('should'),
     logger = require('winston'),
     testUtil = require('../util');
 
-module.exports = exports = {
-    setUp: function(cb) {
-        testUtil.setup(this);
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
-
-    },
-    create: function(test) {
+describe('reference', function() {
+    it('creates', function(done) {
         var self = this;
         async.waterfall([
 
@@ -96,15 +88,19 @@ module.exports = exports = {
                     });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 1);
-            test.equal(p.revisions[0].revision, 1);
-            test.equal(p.revisions[0].op, 'i');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[0])
+                .be.ok();
+            p.revisions.length.should.equal(1);
+            p.revisions[0].revision.should.equal(1);
+            p.revisions[0].op.should.equal('i');
+            done();
         });
+    });
 
-    },
-    update: function(test) {
+    it('updates', function(done) {
         var self = this;
         async.waterfall([
 
@@ -204,12 +200,18 @@ module.exports = exports = {
                     });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 2);
-            test.equal(p.revisions[1].revision, 2);
-            test.equal(p.revisions[1].op, 'u');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[1])
+                .be.ok();
+            p.revisions.length.should.equal(2);
+            p.revisions[1].revision.should.equal(2);
+            p.revisions[1].op.should.equal('u');
+            done();
         });
+    });
 
-    },
-};
+    it('updates with unset');
+    it('removes');
+});

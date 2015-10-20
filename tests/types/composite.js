@@ -3,19 +3,11 @@ var mongoose = require('mongoose'),
     async = require('async'),
     _ = require('lodash'),
     logger = require('winston'),
+    should = require('should'),
     testUtil = require('../util');
 
-module.exports = exports = {
-    setUp: function(cb) {
-        testUtil.setup(this);
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
-
-    },
-    create: function(test) {
+describe('composite', function() {
+    it('creates', function(done) {
         var self = this;
         async.waterfall([
 
@@ -52,15 +44,19 @@ module.exports = exports = {
                     });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 1);
-            test.equal(p.revisions[0].revision, 1);
-            test.equal(p.revisions[0].op, 'i');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[0])
+                .be.ok();
+            p.revisions.length.should.equal(1);
+            p.revisions[0].revision.should.equal(1);
+            p.revisions[0].op.should.equal('i');
+            done();
         });
+    });
 
-    },
-    update: function(test) {
+    it('updates', function(done) {
         var self = this;
         async.waterfall([
 
@@ -105,16 +101,20 @@ module.exports = exports = {
                     });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 2);
-            test.equal(p.revisions[1].revision, 2);
-            test.equal(p.revisions[1].op, 'u');
-            test.equal(p.revisions[1].o['_$set'].someCompositeThing.compositeMemberOne, 'three');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[1])
+                .be.ok();
+            p.revisions.length.should.equal(2);
+            p.revisions[1].revision.should.equal(2);
+            p.revisions[1].op.should.equal('u');
+            p.revisions[1].o['_$set'].someCompositeThing.compositeMemberOne.should.equal('three');
+            done();
         });
+    });
 
-    },
-    'update with unset': function(test) {
+    it('updates with unset', function(done) {
         var self = this;
         async.waterfall([
 
@@ -163,16 +163,25 @@ module.exports = exports = {
                     });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 2);
-            test.equal(p.revisions[1].revision, 2);
-            test.ok(p.revisions[1].o['_$unset'].someCompositeThing.compositeMemberTwo);
-            test.equal(p.revisions[1].op, 'u');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[1])
+                .be.ok();
+            should(p.revisions[1].o)
+                .be.ok();
+            should(p.revisions[1].o['_$unset'])
+                .be.ok();
+            should(p.revisions[1].o['_$unset'].someCompositeThing)
+                .be.ok();
+            should(p.revisions[1].o['_$unset'].someCompositeThing.compositeMemberTwo)
+                .be.ok();
+            p.revisions[1].op.should.equal('u');
+            done();
         });
+    });
 
-    },
-    remove: function(test) {
+    it('removes', function(done) {
         var self = this;
         async.waterfall([
 
@@ -221,13 +230,23 @@ module.exports = exports = {
                 });
             }
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.revisions.length, 3);
-            test.equal(p.revisions[1].revision, 2);
-            test.equal(p.revisions[2].op, 'd');
-            test.ok(p.v1_byId);
-            test.equal(p.v1_byId.modifiedBy, 'remove test');
-            test.done();
+            if (err) return done(err);
+            should(p.revisions)
+                .be.ok();
+            should(p.revisions[1])
+                .be.ok();
+            should(p.revisions[2])
+                .be.ok();
+            should(p.v1_byId)
+                .be.ok();
+
+            p.revisions.length.should.equal(3);
+            p.revisions[1].revision.should.equal(2);
+            p.revisions[2].op.should.equal('d');
+            p.v1_byId.modifiedBy.should.equal('remove test');
+            done();
         });
-    }
-};
+
+    });
+
+});

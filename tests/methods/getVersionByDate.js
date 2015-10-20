@@ -4,44 +4,33 @@ var mongoose = require('mongoose'),
     _ = require('lodash'),
     logger = require('winston'),
     moment = require('moment'),
+    should = require('should'),
     testUtil = require('../util');
 
-
-module.exports = exports = {
-    setUp: function(cb) {
-        var self = this;
-        testUtil.setup(self);;
-
-        self.fixDates = function(item, cb) {
-            item.collection.conn.models['Revisionist'].find({
-                referenceId: item._id
+describe('get versions by date', function() {
+    var fixDates = function(item, cb) {
+        item.collection.conn.models['Revisionist'].find({
+            referenceId: item._id
+        })
+            .sort({
+                ts: -1
             })
-                .sort({
-                    ts: -1
-                })
-                .exec(function(err, revisions) {
-                    async.parallel(_.map(revisions, function(revision, ix) {
-                        return function(cb) {
-                            revision.ts = moment(revision.ts)
-                                .subtract(ix, 'days');
-                            revision.save(function(err) {
-                                cb(err);
-                            });
-                        };
-                    }), function(err, r) {
-                        cb(err);
-                    });
+            .exec(function(err, revisions) {
+                async.parallel(_.map(revisions, function(revision, ix) {
+                    return function(cb) {
+                        revision.ts = moment(revision.ts)
+                            .subtract(ix, 'days');
+                        revision.save(function(err) {
+                            cb(err);
+                        });
+                    };
+                }), function(err, r) {
+                    cb(err);
                 });
-        };
+            });
+    };
 
-        cb();
-    },
-    tearDown: function(cb) {
-        this.connection.close();
-        cb();
-
-    },
-    simple: function(test) {
+    it('gets versions of a simple model', function(done) {
         var self = this;
         async.waterfall([
 
@@ -73,7 +62,7 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                self.fixDates(p.simple, function(err) {
+                fixDates(p.simple, function(err) {
                     cb(err, p);
                 });
             },
@@ -106,17 +95,27 @@ module.exports = exports = {
                     });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.simple.revision, 3);
-            test.equal(p.v1.name, 'stuff');
-            test.equal(p.v2.name, 'foo');
-            test.equal(p.v1_byId.name, 'stuff');
-            test.equal(p.v2_byId.name, 'foo');
-            test.done();
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            p.simple.revision.should.equal(3);
+            should(p.v1)
+                .be.ok();
+            should(p.v2)
+                .be.ok();
+            p.v1.name.should.equal('stuff');
+            p.v2.name.should.equal('foo');
+            should(p.v1_byId)
+                .be.ok();
+            should(p.v2_byId)
+                .be.ok();
+            p.v1_byId.name.should.equal('stuff');
+            p.v2_byId.name.should.equal('foo');
+            done();
         });
+    });
 
-    },
-    composite: function(test) {
+    it('gets versions of a composite model', function(done) {
         var self = this;
         async.waterfall([
 
@@ -151,7 +150,7 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                self.fixDates(p.composite, function(err) {
+                fixDates(p.composite, function(err) {
                     cb(err, p);
                 });
             },
@@ -184,16 +183,34 @@ module.exports = exports = {
                     });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.v1.someCompositeThing.compositeMemberOne, 'one');;
-            test.equal(p.v2.someCompositeThing.compositeMemberOne, 'three');;
-            test.equal(p.v1_byId.someCompositeThing.compositeMemberOne, 'one');;
-            test.equal(p.v2_byId.someCompositeThing.compositeMemberOne, 'three');;
-            test.done();
-        });
+            if (err) return done(err);
+            should(p.v1)
+                .be.ok();
+            should(p.v1.someCompositeThing)
+                .be.ok();
+            should(p.v2)
+                .be.ok();
+            should(p.v2.someCompositeThing)
+                .be.ok();p
+            should(p.v1_byId)
+                .be.ok();
+            should(p.v1_byId.someCompositeThing)
+                .be.ok();
+            should(p.v2_byId)
+                .be.ok();
+            should(p.v2_byId.someCompositeThing)
+                .be.ok();
 
-    },
-    'composite with array': function(test) {
+            p.v1.someCompositeThing.compositeMemberOne.should.equal('one');
+            p.v2.someCompositeThing.compositeMemberOne.should.equal('three');
+            p.v1_byId.someCompositeThing.compositeMemberOne.should.equal('one');
+            p.v2_byId.someCompositeThing.compositeMemberOne.should.equal('three');
+            done();
+
+        });
+    });
+
+    it('gets versions of a composite model with an array', function(done) {
         var self = this;
         async.waterfall([
 
@@ -229,7 +246,7 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                self.fixDates(p.composite, function(err) {
+                fixDates(p.composite, function(err) {
                     cb(err, p);
                 });
             },
@@ -262,16 +279,42 @@ module.exports = exports = {
                     });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.v1.compositeArray[0].arrayMemberOne, 'one');
-            test.equal(p.v2.compositeArray[0].arrayMemberOne, 'three');
-            test.equal(p.v1_byId.compositeArray[0].arrayMemberOne, 'one');
-            test.equal(p.v2_byId.compositeArray[0].arrayMemberOne, 'three');
-            test.done();
-        });
+            if (err) return done(err);
+            should(p.v1)
+                .be.ok();
+            should(p.v1.compositeArray)
+                .be.ok();
+            should(p.v1.compositeArray[0])
+                .be.ok();
+            should(p.v2)
+                .be.ok();
+            should(p.v2.compositeArray)
+                .be.ok();
+            should(p.v2.compositeArray[0])
+                .be.ok();
+            should(p.v1_byId)
+                .be.ok();
+            should(p.v1_byId.compositeArray)
+                .be.ok();
+            should(p.v1_byId.compositeArray[0])
+                .be.ok();
+            should(p.v2_byId)
+                .be.ok();
+            should(p.v2_byId.compositeArray)
+                .be.ok();
+            should(p.v2_byId.compositeArray[0])
+                .be.ok();
 
-    },
-    reference: function(test) {
+            p.v1.compositeArray[0].arrayMemberOne.should.equal('one');
+            p.v2.compositeArray[0].arrayMemberOne.should.equal('three');
+            p.v1_byId.compositeArray[0].arrayMemberOne.should.equal('one');
+            p.v2_byId.compositeArray[0].arrayMemberOne.should.equal('three');
+
+            done();
+        });
+    });
+
+    it('gets version of a model with a reference', function(done) {
         var self = this;
         async.waterfall([
 
@@ -374,7 +417,7 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                self.fixDates(p.reference, function(err) {
+                fixDates(p.reference, function(err) {
                     cb(err, p);
                 });
             },
@@ -392,7 +435,7 @@ module.exports = exports = {
                         cb(err, p);
                     });
             },
-             function(p, cb) {
+            function(p, cb) {
                 self.Reference.getVersion(p.reference._id, moment()
                     .subtract(2, 'days'), function(err, version) {
                         p.v1_byId = version;
@@ -407,16 +450,38 @@ module.exports = exports = {
                     });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.v1.simple.toString(), p.simple._id.toString());
-            test.equal(p.v2.simple.toString(), p.simple2._id.toString());
-            test.equal(p.v1_byId.simple.toString(), p.simple._id.toString());
-            test.equal(p.v2_byId.simple.toString(), p.simple2._id.toString());
-            test.done();
+            if (err) return done(err);
+            should(p.v1)
+                .be.ok();
+            should(p.v1.simple)
+                .be.ok();
+            should(p.v2)
+                .be.ok();
+            should(p.v2.simple)
+                .be.ok();
+            should(p.v1_byId)
+                .be.ok();
+            should(p.v1_byId.simple)
+                .be.ok();
+            should(p.v2_byId)
+                .be.ok();
+            should(p.v2_byId.simple)
+                .be.ok();
+
+            p.v1.simple.toString()
+                .should.equal(p.simple._id.toString());
+            p.v2.simple.toString()
+                .should.equal(p.simple2._id.toString());
+            p.v1_byId.simple.toString()
+                .should.equal(p.simple._id.toString());
+            p.v2_byId.simple.toString()
+                .should.equal(p.simple2._id.toString());
+            done();
         });
 
-    },
-    'bad future date': function(test) {
+    });
+
+    it('should be able to handle a bad future date', function(done) {
         var self = this;
         async.waterfall([
 
@@ -448,27 +513,35 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                p.simple.getVersion(moment().add(1, 'year'), function(err, version) {
-                    p.v1 = version;
-                    cb(err, p);
-                });
+                p.simple.getVersion(moment()
+                    .add(1, 'year'), function(err, version) {
+                        p.v1 = version;
+                        cb(err, p);
+                    });
             },
             function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment().add(1, 'year'), function(err, version) {
-                    p.v1_byId = version;
-                    cb(err, p);
-                });
+                self.Simple.getVersion(p.simple._id, moment()
+                    .add(1, 'year'), function(err, version) {
+                        p.v1_byId = version;
+                        cb(err, p);
+                    });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.simple.revision, 3);
-            test.equal(p.v1.name, 'bar');
-            test.equal(p.v1_byId.name, 'bar');
-            test.done();
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            should(p.v1)
+                .be.ok();
+            should(p.v1_byId)
+                .be.ok();
+            p.simple.revision.should.equal(3);
+            p.v1.name.should.equal('bar');
+            p.v1_byId.name.should.equal('bar');
+            done();
         });
+    });
 
-    },
-    'bad past date': function(test) {
+    it('should be able to handle as bad past date', function(done) {
         var self = this;
         async.waterfall([
 
@@ -500,24 +573,30 @@ module.exports = exports = {
                 });
             },
             function(p, cb) {
-                p.simple.getVersion(moment().subtract(1, 'year'), function(err, version) {
-                    p.v1 = version;
-                    cb(err, p);
-                });
+                p.simple.getVersion(moment()
+                    .subtract(1, 'year'), function(err, version) {
+                        p.v1 = version;
+                        cb(err, p);
+                    });
             },
             function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment().subtract(1, 'year'), function(err, version) {
-                    p.v1_byId = version;
-                    cb(err, p);
-                });
+                self.Simple.getVersion(p.simple._id, moment()
+                    .subtract(1, 'year'), function(err, version) {
+                        p.v1_byId = version;
+                        cb(err, p);
+                    });
             },
         ], function(err, p) {
-            test.ifError(err);
-            test.equal(p.simple.revision, 3);
-            test.ok(!p.v1);
-            test.ok(!p.v1_byId);
-            test.done();
-        });
+            if (err) return done(err);
+            should(p.simple)
+                .be.ok();
+            should(p.v1)
+                .be.not.ok();
+            should(p.v1_byId)
+                .be.not.ok();
+            p.simple.revision.should.equal(3);
+            done();
 
-    },
-};
+        });
+    });
+});
