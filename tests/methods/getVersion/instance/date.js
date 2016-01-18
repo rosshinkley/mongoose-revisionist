@@ -8,74 +8,23 @@ var mongoose = require('mongoose'),
     testUtil = require('../../../util');
 
 describe('get versions by date', function() {
-    var fixDates = function(item, cb) {
-        item.collection.conn.models['Revisionist'].find({
-            referenceId: item._id
-        })
-            .sort({
-                ts: -1
-            })
-            .exec(function(err, revisions) {
-                async.parallel(_.map(revisions, function(revision, ix) {
-                    return function(cb) {
-                        revision.ts = moment(revision.ts)
-                            .subtract(ix, 'days');
-                        revision.save(function(err) {
-                            cb(err);
-                        });
-                    };
-                }), function(err, r) {
-                    cb(err);
-                });
-            });
-    };
-
     it('gets versions of a simple model', function(done) {
         var self = this;
         async.waterfall([
 
             function(cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test'
-                });
-
-                simple.save(function(err, simple) {
-                    cb(err, {
-                        simple: simple
-                    });
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'foo';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'bar';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                fixDates(p.simple, function(err) {
-                    cb(err, p);
-                });
+                testUtil.shorthand.simple(self, cb);
             },
             function(p, cb) {
                 p.simple.getVersion(moment()
-                    .subtract(2, 'days'), function(err, version) {
+                    .subtract(3, 'days'), function(err, version) {
                         p.v1 = version;
                         cb(err, p);
                     });
             },
             function(p, cb) {
                 p.simple.getVersion(moment()
-                    .subtract(1, 'days'), function(err, version) {
+                    .subtract(2, 'days'), function(err, version) {
                         p.v2 = version;
                         cb(err, p);
                     });
@@ -84,7 +33,7 @@ describe('get versions by date', function() {
             if (err) return done(err);
             should(p.simple)
                 .be.ok();
-            p.simple.revision.should.equal(3);
+            p.simple.revision.should.equal(4);
             should(p.v1)
                 .be.ok();
             should(p.v2)
@@ -100,39 +49,7 @@ describe('get versions by date', function() {
         async.waterfall([
 
             function(cb) {
-                var composite = new self.Composite({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test',
-                    someCompositeThing: {
-                        compositeMemberOne: 'one',
-                        compositeMemberTwo: 'two'
-                    },
-                });
-                composite.save(function(err, composite) {
-                    cb(err, {
-                        composite: composite
-                    });
-                });
-            },
-            function(p, cb) {
-                p.composite.someCompositeThing.compositeMemberOne = 'three';
-                p.composite.save(function(err, composite) {
-                    p.composite = composite;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.composite.someCompositeThing.compositeMemberOne = 'four';
-                p.composite.save(function(err, composite) {
-                    p.composite = composite;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                fixDates(p.composite, function(err) {
-                    cb(err, p);
-                });
+                testUtil.shorthand.composite(self, cb);
             },
             function(p, cb) {
                 p.composite.getVersion(moment()
@@ -157,7 +74,7 @@ describe('get versions by date', function() {
             should(p.v2)
                 .be.ok();
             should(p.v2.someCompositeThing)
-                .be.ok();p
+                .be.ok();
 
             p.v1.someCompositeThing.compositeMemberOne.should.equal('one');
             p.v2.someCompositeThing.compositeMemberOne.should.equal('three');
@@ -171,40 +88,7 @@ describe('get versions by date', function() {
         async.waterfall([
 
             function(cb) {
-                var composite = new self.CompositeWithArray({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test',
-                    compositeArray: [{
-                        arrayMemberOne: 'one',
-                        arrayMemberTwo: 'two'
-                    }],
-                });
-
-                composite.save(function(err, composite) {
-                    cb(err, {
-                        composite: composite
-                    });
-                });
-            },
-            function(p, cb) {
-                p.composite.compositeArray[0].arrayMemberOne = 'three';
-                p.composite.save(function(err, composite) {
-                    p.composite = composite;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.composite.compositeArray[0].arrayMemberOne = 'four';
-                p.composite.save(function(err, composite) {
-                    p.composite = composite;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                fixDates(p.composite, function(err) {
-                    cb(err, p);
-                });
+                testUtil.shorthand.compositeWithArray(self, cb);
             },
             function(p, cb) {
                 p.composite.getVersion(moment()
@@ -247,107 +131,7 @@ describe('get versions by date', function() {
         async.waterfall([
 
             function(cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test'
-                });
-
-                simple.save(function(err, simple) {
-                    cb(err, {
-                        simple: simple
-                    });
-                });
-            },
-            function(p, cb) {
-                var composite = new self.Composite({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    someCompositeThing: {
-                        compositeMemberOne: 'one',
-                        compositeMemberTwo: 'two'
-                    },
-                    createdBy: 'test'
-                });
-
-                composite.save(function(err, composite) {
-                    p.composite = composite;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                var compositeWithArray = new self.CompositeWithArray({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    compositeArray: [{
-                        arrayMemberOne: 'one',
-                        arrayMemberTwo: 'two'
-                    }],
-                    createdBy: 'test'
-                });
-
-                compositeWithArray.save(function(err, compositeWithArray) {
-                    p.compositeWithArray = compositeWithArray;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                var reference = new self.Reference({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    simple: p.simple,
-                    composite: p.composite,
-                    compositeArray: p.compositeWithArray,
-                    createdBy: 'test'
-                });
-
-                reference.save(function(err, reference) {
-                    p.reference = reference;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test'
-                });
-
-                simple.save(function(err, simple) {
-                    p.simple2 = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.reference.simple = p.simple2;
-                p.reference.save(function(err, reference) {
-                    p.reference = reference;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'test'
-                });
-
-                simple.save(function(err, simple) {
-                    p.simple3 = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.reference.simple = p.simple3;
-                p.reference.save(function(err, reference) {
-                    p.reference = reference;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                fixDates(p.reference, function(err) {
-                    cb(err, p);
-                });
+                testUtil.shorthand.reference(self, cb);
             },
             function(p, cb) {
                 p.reference.getVersion(moment()
@@ -388,31 +172,7 @@ describe('get versions by date', function() {
         async.waterfall([
 
             function(cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'ross'
-                });
-
-                simple.save(function(err, simple) {
-                    cb(err, {
-                        simple: simple
-                    });
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'foo';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'bar';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
+                testUtil.shorthand.simple(self, cb);
             },
             function(p, cb) {
                 p.simple.getVersion(moment()
@@ -427,8 +187,8 @@ describe('get versions by date', function() {
                 .be.ok();
             should(p.v1)
                 .be.ok();
-            p.simple.revision.should.equal(3);
-            p.v1.name.should.equal('bar');
+            p.simple.revision.should.equal(4);
+            p.v1.name.should.equal('baz');
             done();
         });
     });
@@ -438,31 +198,7 @@ describe('get versions by date', function() {
         async.waterfall([
 
             function(cb) {
-                var simple = new self.Simple({
-                    name: 'stuff',
-                    telephone: '999-999-9999',
-                    createdBy: 'ross'
-                });
-
-                simple.save(function(err, simple) {
-                    cb(err, {
-                        simple: simple
-                    });
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'foo';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                p.simple.name = 'bar';
-                p.simple.save(function(err, simple) {
-                    p.simple = simple;
-                    cb(err, p);
-                });
+                testUtil.shorthand.simple(self, cb);
             },
             function(p, cb) {
                 p.simple.getVersion(moment()
@@ -477,7 +213,7 @@ describe('get versions by date', function() {
                 .be.ok();
             should(p.v1)
                 .be.not.ok();
-            p.simple.revision.should.equal(3);
+            p.simple.revision.should.equal(4);
             done();
 
         });

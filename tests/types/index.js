@@ -1,6 +1,7 @@
-module.exports = exports = {
-	"composite": require("./composite"),
-	"compositeWithArray": require("./compositeWithArray"),
-	"reference": require("./reference"),
-	"simple": require("./simple"),
-};
+require('../util');
+describe('types', function(){
+	require("./composite");
+	require("./compositeWithArray");
+	require("./reference");
+	require("./simple");
+});

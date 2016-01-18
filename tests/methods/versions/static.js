@@ -12,31 +12,7 @@ describe('get versions usinng static method', function() {
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'foo';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'bar';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
+        testUtil.shorthand.simple(self, cb);
       },
       function(p, cb) {
         self.Simple.versions(p.simple.id, function(err, versions) {
@@ -48,7 +24,7 @@ describe('get versions usinng static method', function() {
       if (err) return done(err);
       should(p.versions)
         .be.ok();
-      p.versions.length.should.equal(3);
+      p.versions.length.should.equal(4);
       done();
     });
   });
@@ -58,34 +34,7 @@ describe('get versions usinng static method', function() {
     async.waterfall([
 
       function(cb) {
-        var composite = new self.Composite({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test',
-          someCompositeThing: {
-            compositeMemberOne: 'one',
-            compositeMemberTwo: 'two'
-          },
-        });
-        composite.save(function(err, composite) {
-          cb(err, {
-            composite: composite
-          });
-        });
-      },
-      function(p, cb) {
-        p.composite.someCompositeThing.compositeMemberOne = 'three';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.composite.someCompositeThing.compositeMemberOne = 'four';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
+        testUtil.shorthand.composite(self, cb);
       },
       function(p, cb) {
         self.Composite.versions(p.composite.id, function(err, versions) {
@@ -107,35 +56,7 @@ describe('get versions usinng static method', function() {
     async.waterfall([
 
       function(cb) {
-        var composite = new self.CompositeWithArray({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test',
-          compositeArray: [{
-            arrayMemberOne: 'one',
-            arrayMemberTwo: 'two'
-          }],
-        });
-
-        composite.save(function(err, composite) {
-          cb(err, {
-            composite: composite
-          });
-        });
-      },
-      function(p, cb) {
-        p.composite.compositeArray[0].arrayMemberOne = 'three';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.composite.compositeArray[0].arrayMemberOne = 'four';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
+        testUtil.shorthand.compositeWithArray(self, cb);
       },
       function(p, cb) {
         self.CompositeWithArray.versions(p.composite.id, function(err, versions) {
@@ -157,102 +78,7 @@ describe('get versions usinng static method', function() {
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        var composite = new self.Composite({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          someCompositeThing: {
-            compositeMemberOne: 'one',
-            compositeMemberTwo: 'two'
-          },
-          createdBy: 'test'
-        });
-
-        composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var compositeWithArray = new self.CompositeWithArray({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          compositeArray: [{
-            arrayMemberOne: 'one',
-            arrayMemberTwo: 'two'
-          }],
-          createdBy: 'test'
-        });
-
-        compositeWithArray.save(function(err, compositeWithArray) {
-          p.compositeWithArray = compositeWithArray;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var reference = new self.Reference({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          simple: p.simple,
-          composite: p.composite,
-          compositeArray: p.compositeWithArray,
-          createdBy: 'test'
-        });
-
-        reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test'
-        });
-
-        simple.save(function(err, simple) {
-          p.simple2 = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.reference.simple = p.simple2;
-        p.reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'test'
-        });
-
-        simple.save(function(err, simple) {
-          p.simple3 = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.reference.simple = p.simple3;
-        p.reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
+        testUtil.shorthand.reference(self, cb);
       },
       function(p, cb) {
         self.Reference.versions(p.reference.id, function(err, versions){

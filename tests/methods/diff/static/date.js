@@ -9,70 +9,12 @@ var mongoose = require('mongoose'),
 
 describe('get diffs by version dates', function() {
 
-  var fixDates = function(item, cb) {
-    item.collection.conn.models['Revisionist'].find({
-      referenceId: item._id
-    })
-      .sort({
-        ts: -1
-      })
-      .exec(function(err, revisions) {
-        async.parallel(_.map(revisions, function(revision, ix) {
-          return function(cb) {
-            revision.ts = moment(revision.ts)
-              .subtract(ix, 'days');
-            revision.save(function(err) {
-              cb(err);
-            });
-          };
-        }), function(err, r) {
-          cb(err);
-        });
-      });
-  };
-
   it('gets a diff of a simple model', function(done) {
     var self = this;
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'foo';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'bar';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'baz';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.simple, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.simple(self, cb);
       },
       function(p, cb) {
         self.Simple.diff(p.simple.id, moment()
@@ -100,40 +42,7 @@ describe('get diffs by version dates', function() {
     async.waterfall([
 
       function(cb) {
-        var composite = new self.Composite({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross',
-          someCompositeThing: {
-            compositeMemberOne: 'one',
-            compositeMemberTwo: 'two'
-          },
-        });
-        composite.save(function(err, composite) {
-          cb(err, {
-            composite: composite
-          });
-        });
-      },
-      function(p, cb) {
-        p.composite.someCompositeThing.compositeMemberOne = 'three';
-        p.composite.someCompositeThing.compositeMemberTwo = 'five';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.composite.someCompositeThing.compositeMemberOne = 'four';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.composite, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.composite(self, cb);
       },
       function(p, cb) {
         self.Composite.diff(p.composite.id, moment()
@@ -162,40 +71,7 @@ describe('get diffs by version dates', function() {
     async.waterfall([
 
       function(cb) {
-        var composite = new self.CompositeWithArray({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross',
-          compositeArray: [{
-            arrayMemberOne: 'one',
-            arrayMemberTwo: 'two'
-          }],
-        });
-
-        composite.save(function(err, composite) {
-          cb(err, {
-            composite: composite
-          });
-        });
-      },
-      function(p, cb) {
-        p.composite.compositeArray[0].arrayMemberOne = 'three';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.composite.compositeArray[0].arrayMemberOne = 'four';
-        p.composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.composite, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.compositeWithArray(self, cb);
       },
       function(p, cb) {
         self.CompositeWithArray.diff(p.composite.id, moment()
@@ -222,107 +98,7 @@ describe('get diffs by version dates', function() {
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        var composite = new self.Composite({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          someCompositeThing: {
-            compositeMemberOne: 'one',
-            compositeMemberTwo: 'two'
-          },
-          createdBy: 'ross'
-        });
-
-        composite.save(function(err, composite) {
-          p.composite = composite;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var compositeWithArray = new self.CompositeWithArray({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          compositeArray: [{
-            arrayMemberOne: 'one',
-            arrayMemberTwo: 'two'
-          }],
-          createdBy: 'ross'
-        });
-
-        compositeWithArray.save(function(err, compositeWithArray) {
-          p.compositeWithArray = compositeWithArray;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var reference = new self.Reference({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          simple: p.simple,
-          composite: p.composite,
-          compositeArray: p.compositeWithArray,
-          createdBy: 'test'
-        });
-
-        reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          p.simple2 = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.reference.simple = p.simple2;
-        p.reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          p.simple3 = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.reference.simple = p.simple3;
-        p.reference.save(function(err, reference) {
-          p.reference = reference;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.reference, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.reference(self, cb);
       },
       function(p, cb) {
         self.Reference.diff(p.reference.id, moment()
@@ -349,36 +125,7 @@ describe('get diffs by version dates', function() {
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'foo';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'bar';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.simple, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.simple(self, cb);
       },
       function(p, cb) {
         self.Simple.diff(p.simple.id, moment()
@@ -403,36 +150,7 @@ describe('get diffs by version dates', function() {
     async.waterfall([
 
       function(cb) {
-        var simple = new self.Simple({
-          name: 'stuff',
-          telephone: '999-999-9999',
-          createdBy: 'ross'
-        });
-
-        simple.save(function(err, simple) {
-          cb(err, {
-            simple: simple
-          });
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'foo';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        p.simple.name = 'bar';
-        p.simple.save(function(err, simple) {
-          p.simple = simple;
-          cb(err, p);
-        });
-      },
-      function(p, cb) {
-        fixDates(p.simple, function(err) {
-          cb(err, p);
-        });
+        testUtil.shorthand.simple(self, cb);
       },
       function(p, cb) {
         self.Simple.diff(p.simple.id, moment()
