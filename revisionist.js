@@ -54,16 +54,23 @@ var revisionist = {
     });
 
     schema.add({
-      modified: Date,
-      modifiedBy: String,
-      created: Date,
-      createdBy: String,
       revision: Number
     });
 
     schema.method('versions', function(cb) {
       this.collection.conn.models[options.modelName].find({
         referenceId: this._id
+      }, {
+        revision: 1
+      })
+        .exec(function(err, revisions) {
+          cb(err, _.uniq(revisions));
+        });
+    });
+
+    schema.static('versions', function(id, cb) {
+      this.collection.conn.models[options.modelName].find({
+        referenceId: id
       }, {
         revision: 1
       })
@@ -296,28 +303,6 @@ var revisionist = {
       //determine what kind of operation this is
       if (!original) {
         operation = 'i';
-        self.created = moment()
-          .toDate();
-
-        //check createdBy
-        if (!self.createdBy && !self.modifiedBy) {
-          console.warn('mongoose-revisionist: no createdBy specified for %s in model %s', self._id, self.constructor.modelName);
-          self.createdBy = '[unknown]';
-        } else if (!self.createdBy) {
-          self.createdBy = self.modifiedBy;
-        }
-      }
-
-      //set the modified date
-      self.modified = moment()
-        .toDate();
-
-      //check modifiedBy
-      if (!self.modifiedBy && operation == 'i') {
-        self.modifiedBy = self.createdBy;
-      } else if (!self.modifiedBy) {
-        console.warn('mongoose-revisionist: no modifiedBy specified for %s in model %s', self._id, self.constructor.modelName);
-        self.modifiedBy = '[unknown]';
       }
 
       //first, determine what overlaps, and what is different in that set
