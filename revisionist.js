@@ -118,20 +118,24 @@ var revisionist = {
         .exec(function(err, revisions) {
           var collapsed = revisions.length == 0 ? undefined : {};
           _.each(revisions, function(revision) {
-            if (revision.op == 'i' || (revision.op == 'u' && revision.o.hasOwnProperty('_id'))) {
-              _.each(revision.o['_$set'], function(value, key) {
-                collapsed[key] = value;
-              });
-            } else if (revision.op == 'u') {
-              if (revision.o.hasOwnProperty('_$set')) {
+            //check for 'o'
+            //nb: o can be omitted in the update immediately prior to a deletion
+            if (revision.hasOwnProperty('o')) {
+              if (revision.op == 'i' || (revision.op == 'u' && revision.o.hasOwnProperty('_id'))) {
                 _.each(revision.o['_$set'], function(value, key) {
                   collapsed[key] = value;
                 });
-              }
-              if (revision.o.hasOwnProperty('_$unset')) {
-                _.each(revision.o['_$unset'], function(value, key) {
-                  delete collapsed[key];
-                });
+              } else if (revision.op == 'u') {
+                if (revision.o.hasOwnProperty('_$set')) {
+                  _.each(revision.o['_$set'], function(value, key) {
+                    collapsed[key] = value;
+                  });
+                }
+                if (revision.o.hasOwnProperty('_$unset')) {
+                  _.each(revision.o['_$unset'], function(value, key) {
+                    delete collapsed[key];
+                  });
+                }
               }
             }
           })
@@ -189,8 +193,8 @@ var revisionist = {
             var from = (collapsed[collection][key] || {})
               .to;
 
-            _.each(_.keys(collapsed), function(collectionKey){
-              if(collapsed[collectionKey][key]){
+            _.each(_.keys(collapsed), function(collectionKey) {
+              if (collapsed[collectionKey][key]) {
                 from = collapsed[collectionKey][key].to;
                 delete collapsed[collection][key];
               }
