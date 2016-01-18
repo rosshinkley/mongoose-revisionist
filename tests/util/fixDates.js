@@ -12,7 +12,7 @@ module.exports = exports = function(item, cb) {
       async.parallel(_.map(revisions, function(revision, ix) {
         return function(cb) {
           revision.ts = moment(revision.ts)
-            .subtract(ix, 'days');
+            .subtract(ix, 'days').toDate();
           revision.save(function(err) {
             cb(err);
           });

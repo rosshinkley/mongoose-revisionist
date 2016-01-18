@@ -118,6 +118,7 @@ var revisionist = {
         .exec(function(err, revisions) {
           var collapsed = revisions.length == 0 ? undefined : {};
           _.each(revisions, function(revision) {
+            revision = revision.toObject();
             //check for 'o'
             //nb: o can be omitted in the update immediately prior to a deletion
             if (revision.hasOwnProperty('o')) {
@@ -139,7 +140,6 @@ var revisionist = {
               }
             }
           })
-
           cb(err, collapsed);
         });
     };
