@@ -6,21 +6,27 @@ var _ = require('lodash'),
   mongoose = require('mongoose');
 
 _.mixin({
-  keysDeep: function(thing) {
+  keysDeep: function(thing, leafsOnly) {
     var paths = [];
     var t = function(thing, path) {
       _.each(thing, function(value, key) {
         path.push(key);
-
+        var isLeaf = true;
         if (!/^[a-fA-F0-9]{24}/.test(thing[key].toString()) && (_.isObject(thing[key]) || _.isArray(thing[key]))) {
+          isLeaf = false;
           t(thing[key], path);
-        } else {}
-        paths.push(path.join('.'));
+        }
+        if (leafsOnly && isLeaf) {
+          paths.push(path.join('.'));
+        }
+
+        if (!leafsOnly) {
+          paths.push(path.join('.'));
+        }
         path.pop();
       });
     };
     t(thing, []);
-
     return paths;
   }
 });
@@ -173,23 +179,31 @@ var revisionist = {
           };
           _.each(revisions, function(revision) {
             if (revision.op == 'i' || (revision.op == 'u' && revision.o.hasOwnProperty('_id'))) {
-              _.each(revision.o['_$set'], function(value, key) {
-                collapsed.added[key] = {
-                  from: '',
-                  to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
-                  revision: revision.revision
-                };
-                if (collapsed.removed[key]) {
-                  delete collapsed.removed[key];
-                }
+              _.each(_.keysDeep(revision.o['_$set'], true), function(key) {
+                var value = _.get(revision.o['_$set'], key),
+                  from = (collapsed.added[key] || {})
+                  .to;
                 if (collapsed.updated[key]) {
+                  from = collapsed.updated[key].to;
                   delete collapsed.updated[key];
                 }
+                if (collapsed.removed[key]) {
+                  from = collapsed.removed[key].to;
+                  delete collapsed.removed[key];
+                }
+                collapsed.added[key] = {
+                  from: from,
+                  to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
+                  revision: revision.revision
+                }
+
               });
+
             } else if (revision.op == 'u') {
               if (revision.o.hasOwnProperty('_$set')) {
-                _.each(revision.o['_$set'], function(value, key) {
-                  var from = (collapsed.updated[key] || {})
+                _.each(_.keysDeep(revision.o['_$set'], true), function(key) {
+                  var value = _.get(revision.o['_$set'], key),
+                    from = (collapsed.updated[key] || {})
                     .to;
                   if (collapsed.added[key]) {
                     from = collapsed.added[key].to;
@@ -204,11 +218,14 @@ var revisionist = {
                     to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
                     revision: revision.revision
                   }
+
                 });
               }
               if (revision.o.hasOwnProperty('_$unset')) {
-                _.each(revision.o['_$unset'], function(value, key) {
-                  from = '';
+                _.each(_.keysDeep(revision.o['_$unset'], true), function(key) {
+                  var value = _.get(revision.o['_$unset'], key),
+                    from = (collapsed.removed[key] || {})
+                    .to;
                   if (collapsed.added[key]) {
                     from = collapsed.added[key].to;
                     delete collapsed.added[key];
@@ -221,8 +238,10 @@ var revisionist = {
                     from: from,
                     to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
                     revision: revision.revision
-                  };
+                  }
+
                 });
+
               }
             }
           })

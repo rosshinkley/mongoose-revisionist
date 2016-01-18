@@ -60,4 +60,55 @@ describe('get diffs by version numbers', function() {
             done();
         });
     });
+    it('gets a diff of a composite model', function(done) {
+        var self = this;
+        async.waterfall([
+
+            function(cb) {
+                var composite = new self.Composite({
+                    name: 'stuff',
+                    telephone: '999-999-9999',
+                    createdBy: 'ross',
+                    someCompositeThing: {
+                        compositeMemberOne: 'one',
+                        compositeMemberTwo: 'two'
+                    },
+                });
+                composite.save(function(err, composite) {
+                    cb(err, {
+                        composite: composite
+                    });
+                });
+            },
+            function(p, cb) {
+                p.composite.someCompositeThing.compositeMemberOne = 'three';
+                p.composite.someCompositeThing.compositeMemberTwo = 'five';
+                p.composite.save(function(err, composite) {
+                    p.composite = composite;
+                    cb(err, p);
+                });
+            },
+            function(p, cb) {
+                p.composite.someCompositeThing.compositeMemberOne = 'four';
+                p.composite.save(function(err, composite) {
+                    p.composite = composite;
+                    cb(err, p);
+                });
+            },
+            function(p, cb){
+                p.composite.diff(2, 3, function(err, diff){
+                    p.updateDiff = diff;
+                    cb(err, p);
+                })
+            }
+        ], function(err, p) {
+            if (err) return done(err);
+            should(p.updateDiff).be.ok();
+            p.updateDiff.updated['someCompositeThing.compositeMemberOne'].from.should.equal('three');
+            p.updateDiff.updated['someCompositeThing.compositeMemberOne'].to.should.equal('four');
+            p.updateDiff.updated['someCompositeThing.compositeMemberOne'].revision.should.equal(3);
+            done();
+        });
+
+    });
 });
