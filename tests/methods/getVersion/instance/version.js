@@ -4,7 +4,7 @@ var mongoose = require('mongoose'),
     _ = require('lodash'),
     logger = require('winston'),
     should = require('should'),
-    testUtil = require('../util');
+    testUtil = require('../../../util');
 
 describe('get versions by version number', function() {
     it('gets versions of a simple model', function(done) {
@@ -50,19 +50,6 @@ describe('get versions by version number', function() {
                     cb(err, p);
                 });
             },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, 1, function(err, version) {
-                    p.v1_byId = version;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, 2, function(err, version) {
-                    p.v2_byId = version;
-                    cb(err, p);
-                });
-            },
-
         ], function(err, p) {
             if (err) return done(err);
             should(p.simple)
@@ -74,12 +61,6 @@ describe('get versions by version number', function() {
                 .be.ok();
             p.v1.name.should.equal('stuff');
             p.v2.name.should.equal('foo');
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            p.v1_byId.name.should.equal('stuff');
-            p.v2_byId.name.should.equal('foo');
             done();
         });
     });
@@ -130,19 +111,6 @@ describe('get versions by version number', function() {
                     cb(err, p);
                 });
             },
-            function(p, cb) {
-                self.Composite.getVersion(p.composite._id, 1, function(err, v1) {
-                    p.v1_byId = v1;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                self.Composite.getVersion(p.composite._id, 2, function(err, v2) {
-                    p.v2_byId = v2;
-                    cb(err, p);
-                });
-            }
-
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -153,20 +121,9 @@ describe('get versions by version number', function() {
                 .be.ok();
             should(p.v2.someCompositeThing)
                 .be.ok();
-            p
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.someCompositeThing)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.someCompositeThing)
-                .be.ok();
 
             p.v1.someCompositeThing.compositeMemberOne.should.equal('one');
             p.v2.someCompositeThing.compositeMemberOne.should.equal('three');
-            p.v1_byId.someCompositeThing.compositeMemberOne.should.equal('one');
-            p.v2_byId.someCompositeThing.compositeMemberOne.should.equal('three');
             done();
         });
 
@@ -219,18 +176,6 @@ describe('get versions by version number', function() {
                     cb(err, p);
                 });
             },
-            function(p, cb) {
-                self.CompositeWithArray.getVersion(p.composite._id, 1, function(err, v1) {
-                    p.v1_byId = v1;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                self.CompositeWithArray.getVersion(p.composite._id, 2, function(err, v2) {
-                    p.v2_byId = v2;
-                    cb(err, p);
-                });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -245,23 +190,9 @@ describe('get versions by version number', function() {
                 .be.ok();
             should(p.v2.compositeArray[0])
                 .be.ok();
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.compositeArray)
-                .be.ok();
-            should(p.v1_byId.compositeArray[0])
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.compositeArray)
-                .be.ok();
-            should(p.v2_byId.compositeArray[0])
-                .be.ok();
 
             p.v1.compositeArray[0].arrayMemberOne.should.equal('one');
             p.v2.compositeArray[0].arrayMemberOne.should.equal('three');
-            p.v1_byId.compositeArray[0].arrayMemberOne.should.equal('one');
-            p.v2_byId.compositeArray[0].arrayMemberOne.should.equal('three');
 
             done();
         });
@@ -382,19 +313,6 @@ describe('get versions by version number', function() {
                     cb(err, p);
                 });
             },
-            function(p, cb) {
-                self.Reference.getVersion(p.reference._id, 1, function(err, v1) {
-                    p.v1_byId = v1;
-                    cb(err, p);
-                });
-            },
-            function(p, cb) {
-                self.Reference.getVersion(p.reference._id, 2, function(err, v2) {
-                    p.v2_byId = v2;
-                    cb(err, p);
-                });
-            }
-
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -405,22 +323,10 @@ describe('get versions by version number', function() {
                 .be.ok();
             should(p.v2.simple)
                 .be.ok();
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.simple)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.simple)
-                .be.ok();
 
             p.v1.simple.toString()
                 .should.equal(p.simple._id.toString());
             p.v2.simple.toString()
-                .should.equal(p.simple2._id.toString());
-            p.v1_byId.simple.toString()
-                .should.equal(p.simple._id.toString());
-            p.v2_byId.simple.toString()
                 .should.equal(p.simple2._id.toString());
             done();
         });

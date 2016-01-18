@@ -5,7 +5,7 @@ var mongoose = require('mongoose'),
     logger = require('winston'),
     moment = require('moment'),
     should = require('should'),
-    testUtil = require('../util');
+    testUtil = require('../../../util');
 
 describe('get versions by date', function() {
     var fixDates = function(item, cb) {
@@ -80,20 +80,6 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment()
-                    .subtract(2, 'days'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment()
-                    .subtract(1, 'days'), function(err, version) {
-                        p.v2_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.simple)
@@ -105,12 +91,6 @@ describe('get versions by date', function() {
                 .be.ok();
             p.v1.name.should.equal('stuff');
             p.v2.name.should.equal('foo');
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            p.v1_byId.name.should.equal('stuff');
-            p.v2_byId.name.should.equal('foo');
             done();
         });
     });
@@ -168,20 +148,6 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.Composite.getVersion(p.composite._id, moment()
-                    .subtract(2, 'days'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
-            function(p, cb) {
-                self.Composite.getVersion(p.composite._id, moment()
-                    .subtract(1, 'days'), function(err, version) {
-                        p.v2_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -192,19 +158,9 @@ describe('get versions by date', function() {
                 .be.ok();
             should(p.v2.someCompositeThing)
                 .be.ok();p
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.someCompositeThing)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.someCompositeThing)
-                .be.ok();
 
             p.v1.someCompositeThing.compositeMemberOne.should.equal('one');
             p.v2.someCompositeThing.compositeMemberOne.should.equal('three');
-            p.v1_byId.someCompositeThing.compositeMemberOne.should.equal('one');
-            p.v2_byId.someCompositeThing.compositeMemberOne.should.equal('three');
             done();
 
         });
@@ -264,20 +220,6 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.CompositeWithArray.getVersion(p.composite._id, moment()
-                    .subtract(2, 'days'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
-            function(p, cb) {
-                self.CompositeWithArray.getVersion(p.composite._id, moment()
-                    .subtract(1, 'days'), function(err, version) {
-                        p.v2_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -292,23 +234,9 @@ describe('get versions by date', function() {
                 .be.ok();
             should(p.v2.compositeArray[0])
                 .be.ok();
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.compositeArray)
-                .be.ok();
-            should(p.v1_byId.compositeArray[0])
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.compositeArray)
-                .be.ok();
-            should(p.v2_byId.compositeArray[0])
-                .be.ok();
 
             p.v1.compositeArray[0].arrayMemberOne.should.equal('one');
             p.v2.compositeArray[0].arrayMemberOne.should.equal('three');
-            p.v1_byId.compositeArray[0].arrayMemberOne.should.equal('one');
-            p.v2_byId.compositeArray[0].arrayMemberOne.should.equal('three');
 
             done();
         });
@@ -435,20 +363,6 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.Reference.getVersion(p.reference._id, moment()
-                    .subtract(2, 'days'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
-            function(p, cb) {
-                self.Reference.getVersion(p.reference._id, moment()
-                    .subtract(1, 'days'), function(err, version) {
-                        p.v2_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.v1)
@@ -459,22 +373,10 @@ describe('get versions by date', function() {
                 .be.ok();
             should(p.v2.simple)
                 .be.ok();
-            should(p.v1_byId)
-                .be.ok();
-            should(p.v1_byId.simple)
-                .be.ok();
-            should(p.v2_byId)
-                .be.ok();
-            should(p.v2_byId.simple)
-                .be.ok();
 
             p.v1.simple.toString()
                 .should.equal(p.simple._id.toString());
             p.v2.simple.toString()
-                .should.equal(p.simple2._id.toString());
-            p.v1_byId.simple.toString()
-                .should.equal(p.simple._id.toString());
-            p.v2_byId.simple.toString()
                 .should.equal(p.simple2._id.toString());
             done();
         });
@@ -519,24 +421,14 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment()
-                    .add(1, 'year'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.simple)
                 .be.ok();
             should(p.v1)
                 .be.ok();
-            should(p.v1_byId)
-                .be.ok();
             p.simple.revision.should.equal(3);
             p.v1.name.should.equal('bar');
-            p.v1_byId.name.should.equal('bar');
             done();
         });
     });
@@ -579,20 +471,11 @@ describe('get versions by date', function() {
                         cb(err, p);
                     });
             },
-            function(p, cb) {
-                self.Simple.getVersion(p.simple._id, moment()
-                    .subtract(1, 'year'), function(err, version) {
-                        p.v1_byId = version;
-                        cb(err, p);
-                    });
-            },
         ], function(err, p) {
             if (err) return done(err);
             should(p.simple)
                 .be.ok();
             should(p.v1)
-                .be.not.ok();
-            should(p.v1_byId)
                 .be.not.ok();
             p.simple.revision.should.equal(3);
             done();
