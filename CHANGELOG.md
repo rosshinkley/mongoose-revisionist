@@ -1,6 +1,7 @@
 ##0.2.0
 - Removes `created`, `createdBy`, `modified` and `modifiedBy`.  Those are not required for this library to function and should be details left to the user.
 - Adds `diff` for versions and dates.
+- Condenses the unit tests considerably by breaking out model creation.
 
 ##0.1.2
 - Changes out nodeunit for mocha to get a little more control over when connections and models are created for testing.  This also prevents connection thrashing.
