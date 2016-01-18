@@ -50,7 +50,7 @@ Gets a specific version of a given Mongoose document.  The first argument of the
 #### .diff(versionNumber|date, versionNumber|date, cb)
 Gets the difference in versions or between dates specified.  Calls back with an object with three hashes: `added`, `removed`, `updated`.  Each hash has member paths denoting they were changed, as well as what the value was changed from and to along with the version the change happened in.  For example:
 
-```json
+```js
 { 
     added: {},
     updated: { 
