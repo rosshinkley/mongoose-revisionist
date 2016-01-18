@@ -1,5 +1,5 @@
 module.exports = exports = {
-	"getVersionByDate": require("./getVersionByDate"),
+	"diff": require("./diff"),
 	"getVersion": require("./getVersion"),
 	"versions": require("./versions"),
 };

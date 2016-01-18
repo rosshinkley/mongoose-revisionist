@@ -27,6 +27,7 @@ var logger = require('winston'),
     });
 
     after(function(done) {
+        logger.silly('closing connection');
         this.connection.close();
         done();
     });

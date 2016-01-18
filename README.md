@@ -6,15 +6,7 @@ Use `npm`: `npm install mongoose-revisionist`
 ## Operation
 Each creation, update or removal will create a Revisionist record with appropriate versioning information.  This allows for easy tracking of changes to records through time as well as providing an auditing mechanism.
 
-The Mongoose plugin adds a handful of fields to the schema if they do not exist already:
-
-- *modified* - `Date` - when the document was last modified.
-- *modifiedBy* - `String` - who/what last modified the document.
-- *created* - `Date` - when the document was created.
-- *createdBy* - `String` - who/what created the document.
-- *revision* - `Number` - the revision of the document, autoincremented every save.
-
-The plugin will also add a collection of revisions that are _close_ to (but not quite exactly) oplog records:
+The Mongoose plugin adds a `revision` field of type `Number` to the target schema, which is autoincremented every save.  The plugin will also add a collection of revisions that are _close_ to (but not quite exactly) oplog records:
 
 - *ts* - `Date` - the timestamp of the operation, defaults to `Date.now`.
 - *v* - `Number` - the Mongoose-internal version of the document.
@@ -49,11 +41,29 @@ The Revisionist plugin also takes an options hash using the plugin syntax:
 
 ### Instance Methods
 
-- *versions* - gets the valid versions for a given Mongoose document.  Calls back with an array of integers.
-- *getVersion* - gets a specific version of a given Mongoose document.  The first argument of the call can be a version number, a date (to get by date), "current" to get the current version, or not specified, also to get the current version.
+#### .versions(cb)
+Gets the valid versions for a given Mongoose document.  Calls back with an array of integers.
+
+#### .getVersion([versionNumber|date|'current', ] cb)
+Gets a specific version of a given Mongoose document.  The first argument of the call can be a version number, a date (to get by date), "current" to get the current version, or not specified, also to get the current version.  Calls back with the collapsed version as it would have appeared at that number/date.
+
+#### .diff(versionNumber|date, versionNumber|date, cb)
+Gets the difference in versions or between dates specified.  Calls back with an object with three hashes: `added`, `removed`, `updated`.  Each hash has member paths denoting they were changed, as well as what the value was changed from and to along with the version the change happened in.  For example:
+
+```json
+{ 
+    added: {},
+    updated: { 
+        name: { 
+            from: 'bar', 
+            to: 'baz', 
+            revision: 4 
+        } 
+    },
+    removed: {}
+}
+```
+... would denote that the `name` field was updated from `bar` to `baz` in the 4th revision.
 
 ### Static Methods
-
-- *getVersion* - gets a specific version of a given Mongoose document.  The first argument must be the document ID to retrieve.  The rest is exactly the same as the intance method: The second argument of the call can be a version number, a date (to get by date), "current" to get the current version, or not specified, also to get the current version.
-
-
+Each of the above instance methods are also available as static methods on the Mongoose model.  The only additional parameter required is a valid Mongo ID as the first parameter.  For example, `instance.diff()` would have the signature `Model.diff(id, versionNumber|date, versionNumber| date, cb)`.
