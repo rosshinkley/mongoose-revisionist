@@ -145,8 +145,8 @@ var revisionist = {
       if (values.length == 2) {
         if ((moment.isMoment(values[0]) || _.isDate(values[0])) &&
           (moment.isMoment(values[1]) || _.isDate(values[1]))) {
-          startDate = moment(values[1]);
-          endDate = moment(values[0]);
+          startDate = moment(values[0]);
+          endDate = moment(values[1]);
         } else {
           startVersion = values[0];
           endVersion = values[1];
