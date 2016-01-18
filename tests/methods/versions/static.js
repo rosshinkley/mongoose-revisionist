@@ -6,7 +6,7 @@ var mongoose = require('mongoose'),
   should = require('should'),
   testUtil = require('../../util');
 
-describe('versions', function() {
+describe('get versions usinng static method', function() {
   it('should get versions of a simple model', function(done) {
     var self = this;
     async.waterfall([

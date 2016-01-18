@@ -184,69 +184,40 @@ var revisionist = {
             updated: {},
             removed: {}
           };
+
+          var modify = function(key, value, revision, collection) {
+            var from = (collapsed[collection][key] || {})
+              .to;
+
+            _.each(_.keys(collapsed), function(collectionKey){
+              if(collapsed[collectionKey][key]){
+                from = collapsed[collectionKey][key].to;
+                delete collapsed[collection][key];
+              }
+            });
+
+            collapsed[collection][key] = {
+              from: from,
+              to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
+              revision: revision
+            };
+          };
+
           _.each(revisions, function(revision) {
             if (revision.op == 'i' || (revision.op == 'u' && revision.o.hasOwnProperty('_id'))) {
               _.each(_.keysDeep(revision.o['_$set'], true), function(key) {
-                var value = _.get(revision.o['_$set'], key),
-                  from = (collapsed.added[key] || {})
-                  .to;
-                if (collapsed.updated[key]) {
-                  from = collapsed.updated[key].to;
-                  delete collapsed.updated[key];
-                }
-                if (collapsed.removed[key]) {
-                  from = collapsed.removed[key].to;
-                  delete collapsed.removed[key];
-                }
-                collapsed.added[key] = {
-                  from: from,
-                  to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
-                  revision: revision.revision
-                }
-
+                modify(key, _.get(revision.o['_$set'], key), revision.revision, 'added');
               });
 
             } else if (revision.op == 'u') {
               if (revision.o.hasOwnProperty('_$set')) {
                 _.each(_.keysDeep(revision.o['_$set'], true), function(key) {
-                  var value = _.get(revision.o['_$set'], key),
-                    from = (collapsed.updated[key] || {})
-                    .to;
-                  if (collapsed.added[key]) {
-                    from = collapsed.added[key].to;
-                    delete collapsed.added[key];
-                  }
-                  if (collapsed.removed[key]) {
-                    from = collapsed.removed[key].to;
-                    delete collapsed.removed[key];
-                  }
-                  collapsed.updated[key] = {
-                    from: from,
-                    to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
-                    revision: revision.revision
-                  }
-
+                  modify(key, _.get(revision.o['_$set'], key), revision.revision, 'updated');
                 });
               }
               if (revision.o.hasOwnProperty('_$unset')) {
                 _.each(_.keysDeep(revision.o['_$unset'], true), function(key) {
-                  var value = _.get(revision.o['_$unset'], key),
-                    from = (collapsed.removed[key] || {})
-                    .to;
-                  if (collapsed.added[key]) {
-                    from = collapsed.added[key].to;
-                    delete collapsed.added[key];
-                  }
-                  if (collapsed.updated[key]) {
-                    from = collapsed.updated[key].to;
-                    delete collapsed.updated[key];
-                  }
-                  collapsed.removed[key] = {
-                    from: from,
-                    to: (/^[a-fA-F0-9]{24}/.test(value.toString()) ? value.toString() : value),
-                    revision: revision.revision
-                  }
-
+                  modify(key, _.get(revision.o['_$unset'], key), reivsion.revision, 'removed');
                 });
 
               }
