@@ -147,6 +147,39 @@ describe('get diffs by version dates', function() {
         p.updateDiff.updated.someNumber.to.should.equal(4);
         done();
       });
+  });
+
+  it('gets a diff of a model with an embedded doc', function(done) {
+      var self = this;
+      async.waterfall([
+
+        function(cb) {
+          testUtil.shorthand.subdocument(self, cb);
+        },
+        function(p, cb) {
+          p.subdocument.diff(moment()
+            .subtract(1, 'days')
+            .startOf('day'), moment()
+            .subtract(0, 'days')
+            .endOf('day'), function(err, diff) {
+              p.updateDiff = diff;
+              cb(err, p);
+            });
+        },
+      ], function(err, p) {
+        if (err) return done(err);
+        should(p.updateDiff)
+          .be.ok();
+        p.updateDiff.updated.name.from.should.equal('bar');
+        p.updateDiff.updated.name.to.should.equal('baz');
+        p.updateDiff.updated['embedded.0.name'].from.should.equal('embedded bar');
+        p.updateDiff.updated['embedded.0.name'].to.should.equal('embedded baz');
+
+        console.log(p.updateDiff.updated);
+
+        p.updateDiff.updated.name.revision.should.equal(4);
+        done();
+      });
     });
 
   it('should handle a bad past version', function(done) {

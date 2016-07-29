@@ -4,4 +4,5 @@ module.exports = exports = {
 	"presave": require("./presave"),
 	"reference": require("./reference"),
 	"simple": require("./simple"),
+	"subdocument": require("./subdocument"),
 };

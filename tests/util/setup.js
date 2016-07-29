@@ -22,6 +22,7 @@ var logger = require('winston'),
         test.CompositeWithArray = test.connection.model('CompositeWithArray', models.CompositeWithArray);
         test.Reference = test.connection.model('Reference', models.Reference);
         test.Presave = test.connection.model('Presave', models.Presave);
+        test.Subdocument = test.connection.model('Subdocument', models.Subdocument);
 
         logger.silly('setup complete');
         done();
