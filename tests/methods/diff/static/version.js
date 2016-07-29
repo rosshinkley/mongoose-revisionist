@@ -30,6 +30,7 @@ describe('get diffs by version numbers', function() {
       done();
     });
   });
+
   it('gets a diff of a composite model', function(done) {
     var self = this;
     async.waterfall([
@@ -97,6 +98,30 @@ describe('get diffs by version numbers', function() {
       p.updateDiff.updated['simple'].to.should.equal(p.simple3.id.toString());
       p.updateDiff.updated['simple'].revision.should.equal(3);
 
+      done();
+    });
+  });
+
+  it('gets a diff of a model with a presave hook', function(done) {
+    var self = this;
+    async.waterfall([
+
+      function(cb) {
+        testUtil.shorthand.presave(self, cb);
+      },
+      function(p, cb) {
+        self.Presave.diff(p.presave.id, 3, 4, function(err, diff) {
+          p.updateDiff = diff;
+          cb(err, p);
+        });
+      },
+    ], function(err, p) {
+      if (err) return done(err);
+      should(p.presave)
+        .be.ok();
+      p.updateDiff.updated.name.from.should.equal('bar');
+      p.updateDiff.updated.name.to.should.equal('baz');
+      p.updateDiff.updated.name.revision.should.equal(4);
       done();
     });
   });

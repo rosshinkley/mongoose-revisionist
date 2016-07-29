@@ -158,6 +158,42 @@ describe('get versions by version number', function() {
     });
   });
 
+  it('gets versions of a model with a presave hook', function(done) {
+    var self = this;
+    async.waterfall([
+
+      function(cb) {
+        testUtil.shorthand.presave(self, cb);
+      },
+      function(p, cb) {
+        p.presave.getVersion(1, function(err, version) {
+          p.v1 = version;
+          cb(err, p);
+        });
+      },
+      function(p, cb) {
+        p.presave.getVersion(2, function(err, version) {
+          p.v2 = version;
+          cb(err, p);
+        });
+      },
+    ], function(err, p) {
+      if (err) return done(err);
+      should(p.presave)
+        .be.ok();
+      p.presave.revision.should.equal(4);
+      should(p.v1)
+        .be.ok();
+      should(p.v2)
+        .be.ok();
+
+      p.v1.someNumber.should.equal(1);
+      p.v2.someNumber.should.equal(2);
+      done();
+    });
+  });
+
+
   it('should get the current version with current specified', function(done) {
     var self = this;
     async.waterfall([

@@ -101,6 +101,32 @@ describe('get diffs by version numbers', function() {
     });
   });
 
+
+  it('gets a diff of a presave hook', function(done) {
+    var self = this;
+    async.waterfall([
+
+      function(cb) {
+        testUtil.shorthand.presave(self, cb);
+      },
+      function(p, cb) {
+        p.presave.diff(3, 4, function(err, diff) {
+          p.updateDiff = diff;
+          cb(err, p);
+        });
+      },
+    ], function(err, p) {
+      if (err) return done(err);
+      should(p.presave)
+        .be.ok();
+      p.updateDiff.updated.name.from.should.equal('bar');
+      p.updateDiff.updated.name.to.should.equal('baz');
+      p.updateDiff.updated.name.revision.should.equal(4);
+      p.updateDiff.updated.someNumber.to.should.equal(4);
+      done();
+    });
+  });
+
   it('should handle a bad future version', function(done) {
     var self = this;
     async.waterfall([

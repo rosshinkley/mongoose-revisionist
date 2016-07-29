@@ -1,6 +1,7 @@
 module.exports = exports = {
 	Composite: require("./composite"),
-	CompositeWithArray: require("./compositeWithArray"),
 	Reference: require("./reference"),
+	CompositeWithArray: require("./compositeWithArray"),
 	Simple: require("./simple"),
+	Presave: require("./presave"),
 };

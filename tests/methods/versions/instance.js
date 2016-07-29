@@ -95,4 +95,26 @@ describe('get versions for instance', function() {
       done();
     });
   });
+
+  it('should get versions of a model with a presave', function(done) {
+    var self = this;
+    async.waterfall([
+
+      function(cb) {
+        testUtil.shorthand.presave(self, cb);
+      },
+      function(p, cb) {
+        p.presave.versions(function(err, versions) {
+          p.versions = versions;
+          cb(err, p);
+        });
+      },
+    ], function(err, p) {
+      if (err) return done(err);
+      should(p.versions)
+        .be.ok();
+      p.versions.length.should.equal(4);
+      done();
+    });
+  });
 });
